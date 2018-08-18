@@ -1,3 +1,5 @@
+Thank you jonbakerfish for the TweeterScraper!
+
 # Introduction #
 `TweetScraper` can get tweets from [Twitter Search](https://twitter.com/search-home). 
 It is built on [Scrapy](http://scrapy.org/) without using [Twitter's APIs](https://dev.twitter.com/rest/public).
@@ -9,17 +11,18 @@ The crawled data is not as *clean* as the one obtained by the APIs, but the bene
 # Installation #
 It requires [Scrapy](http://scrapy.org/) and [PyMongo](https://api.mongodb.org/python/current/) (Also install [MongoDB](https://www.mongodb.org/) if you want to save the data to database). Setting up:
 
-    $ git clone https://github.com/jonbakerfish/TweetScraper.git
+    $ git clone https://github.com/ihgalis/TweetScraper.git
     $ cd TweetScraper/
     $ pip install -r requirements.txt  #add '--user' if you are not root
 	$ scrapy list
 	$ #If the output is 'TweetScraper', then you are ready to go.
 
 # Usage #
+
 1. Change the `USER_AGENT` in `TweetScraper/settings.py` to identify who you are
 	
 		USER_AGENT = 'your website/e-mail'
-
+		
 2. In the root folder of this project, run command like: 
 
 		scrapy crawl TweetScraper -a query="foo,#bar"
@@ -57,6 +60,25 @@ It requires [Scrapy](http://scrapy.org/) and [PyMongo](https://api.mongodb.org/p
 
 E.g.: `scrapy crawl TweetScraper -a query=foo -a crawl_user=True`
 
+# Usage with Docker #
+Before you start through the entire setup process think about where you want to store the data. This fork is designed that you go straight ahead with MongoDB and Docker. You can start the crawler directly or within a Docker container.
+
+For the purpose of a Docker container I have created a Dockerfile which can be used to build your own Image.
+
+1. Build your Image
+
+        cd /to/your/project/
+        docker build -t tweetscrape
+        
+2. Start the scraper inside docker
+
+        docker run -d \
+        --name tweet_scraper \
+        -v /path/on/your/host/with/gitclone:/home/tweetscraper/ \
+        tweetscraper:latester \
+        crapy crawl TweetScraper -a query="example #fun"
+        
+If you want to debug your container just delete the -d from your command and see it's output in your console.
 
 # Acknowledgement #
 Keeping the crawler up to date requires continuous efforts, we thank all the [contributors](https://github.com/jonbakerfish/TweetScraper/graphs/contributors) for their valuable work.
