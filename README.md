@@ -68,14 +68,14 @@ For the purpose of a Docker container I have created a Dockerfile which can be u
 1. Build your Image
 
         cd /to/your/project/
-        docker build -t tweetscrape
+        docker build -t tweetscrape .
         
 2. Start the scraper inside docker
 
         docker run -d \
         --name tweet_scraper \
         -v /path/on/your/host/with/gitclone:/home/tweetscraper/ \
-        tweetscraper:latester \
+        tweetscraper:lateste \
         crapy crawl TweetScraper -a query="example #fun"
         
 If you want to debug your container just delete the -d from your command and see it's output in your console.
