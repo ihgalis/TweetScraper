@@ -1,4 +1,5 @@
 Data/
 pyenv/
+venv/
 
 *.pyc

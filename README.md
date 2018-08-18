@@ -75,8 +75,8 @@ For the purpose of a Docker container I have created a Dockerfile which can be u
         docker run -d \
         --name tweet_scraper \
         -v /path/on/your/host/with/gitclone:/home/tweetscraper/ \
-        tweetscraper:lateste \
-        crapy crawl TweetScraper -a query="example #fun"
+        tweetscraper:latest \
+        scrapy crawl TweetScraper -a query="example #fun"
         
 If you want to debug your container just delete the -d from your command and see it's output in your console.
 
