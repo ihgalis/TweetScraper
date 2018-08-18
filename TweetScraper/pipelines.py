@@ -79,13 +79,13 @@ class SavetoMySQLPipeline(object):
                 )"
 
         try:
-            print "Creating table..."
+            print("Creating table...")
             self.cursor.execute(create_table_query)
         except mysql.connector.Error as err:
-            print err.msg
+            print(err.msg)
         else:
             self.cnx.commit()
-            print "Successfully created table."
+            print("Successfully created table.")
 
     def find_one(self, trait, value):
         select_query =  "SELECT " + trait + " FROM " + self.table_name + " WHERE " + trait + " = " + value + ";"
@@ -141,12 +141,12 @@ class SavetoMySQLPipeline(object):
         insert_query += datetime + "', '" + text + "', '" + user_id + "', '" + username + "' )"
 
         try:
-            print "Inserting..."
+            print("Inserting...")
             self.cursor.execute(insert_query)
         except mysql.connector.Error as err:
-            print err.msg
+            print(err.msg)
         else:
-            print "Successfully inserted."
+            print("Successfully inserted.")
             self.cnx.commit()
 
 
