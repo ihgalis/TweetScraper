@@ -1,0 +1,3 @@
+class TweetScrapeBootstrapException(Exception):
+    pass
+

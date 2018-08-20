@@ -1,2 +1,4 @@
 scrapy
 pymongo
+docker
+mysql-connector-python

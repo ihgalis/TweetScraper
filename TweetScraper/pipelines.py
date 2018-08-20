@@ -13,8 +13,8 @@ from mysql.connector import errorcode
 from TweetScraper.items import Tweet, User
 from TweetScraper.utils import mkdirs
 
-
 logger = logging.getLogger(__name__)
+
 
 class SaveToMongoPipeline(object):
 

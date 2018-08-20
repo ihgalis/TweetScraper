@@ -1,5 +1,3 @@
-Thank you jonbakerfish for the TweeterScraper!
-
 # Introduction #
 `TweetScraper` can get tweets from [Twitter Search](https://twitter.com/search-home). 
 It is built on [Scrapy](http://scrapy.org/) without using [Twitter's APIs](https://dev.twitter.com/rest/public).
@@ -60,7 +58,7 @@ It requires [Scrapy](http://scrapy.org/) and [PyMongo](https://api.mongodb.org/p
 
 E.g.: `scrapy crawl TweetScraper -a query=foo -a crawl_user=True`
 
-# Usage with Docker #
+# Usage with Docker (simple) #
 Before you start through the entire setup process think about where you want to store the data. This fork is designed that you go straight ahead with MongoDB and Docker. You can start the crawler directly or within a Docker container.
 
 For the purpose of a Docker container I have created a Dockerfile which can be used to build your own Image.
@@ -80,9 +78,43 @@ For the purpose of a Docker container I have created a Dockerfile which can be u
         
 If you want to debug your container just delete the -d from your command and see it's output in your console.
 
+# Usage with Docker (automatic) #
+I have created a couple of automatisms which allow you to make bulk searches and save the results to your
+desired destination. Nothing has to be started directly inside of a container!
+
+1. Build the template image (Docker Node)
+
+        cd /to/your/project/
+        docker build -t tweetscraper_alpine .
+        
+2. Start your scraping job (Docker Node)
+
+        python tweetscraper_bootstrap.py -h
+* The most basic search is to use your own keyword combinations
+
+        python tweetscraper_bootstrap.py \
+        -v \                            # verbose mode
+        -n my_own_twitter_scrape \      # container name (part of it)
+        -q "nasa filter:links" \        # search for "nasa" related tweets but only with links containing
+        -vol /path/to/hose/src          # docker volume binding
+        
+* Search for keywords within multiple large german cities
+
+        python tweetscraper_bootstrap.py \
+        -v \                            # verbose mode
+        -n keyword_large_de_city \      # container name (part of it)
+        --querymode near_xl_de_city \   # indicates the type of search (multiple large cities in germany)
+        -k keyword \                    # the keyword you want to search for
+        -vol /path/to/src/on/host       # docker volume binding
+
+What will hapen now is that there will be started a couple of docker containers which will be automatically be deleted after they finish their work. All crawlers will be started with the necessary parameters without you having to interfere with them.
+
+You can also use **-k** multiple times to use **more keywords**. 
+       
 # Acknowledgement #
 Keeping the crawler up to date requires continuous efforts, we thank all the [contributors](https://github.com/jonbakerfish/TweetScraper/graphs/contributors) for their valuable work.
 
+And thank you [Daniel Guerra](https://hub.docker.com/r/danielguerra/alpine-scrapy/) for the base docker image with alpine I found to be useful for this project.
 
 # License #
 TweetScraper is released under the [GNU GENERAL PUBLIC LICENSE, Version 2](https://github.com/jonbakerfish/TweetScraper/blob/master/LICENSE)
