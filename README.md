@@ -63,12 +63,35 @@ Before you start through the entire setup process think about where you want to 
 
 For the purpose of a Docker container I have created a Dockerfile which can be used to build your own Image.
 
-1. Build your Image
+## Install Docker
+
+If you have Docker already I advise you to use portainer.io for a simpler usage of docker. Of course you can go by commandline interfaces but portainer.io helps you maybe to understand more and better. (https://portainer.io/install.html)
+
+    docker volume create portainer_data
+    docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
+
+1. Windows
+
+Download and install the community edition: https://store.docker.com/editions/community/docker-ce-desktop-windows   
+
+2. Linux (Ubuntu 16.04)
+
+    sudo apt-get update
+    sudo apt-get install docker-ce
+    
+    # verify your installation
+    sudo docker run hello-world
+
+3. Mac
+
+Download and install the community edition: https://store.docker.com/editions/community/docker-ce-desktop-mac
+
+## Build your Image
 
         cd /to/your/project/
         docker build -t tweetscrape .
         
-2. Start the scraper inside docker
+## Start the scraper inside docker
 
         docker run -d \
         --name tweet_scraper \
@@ -90,6 +113,8 @@ desired destination. Nothing has to be started directly inside of a container!
 2. Start your scraping job (Docker Node)
 
         python tweetscraper_bootstrap.py -h
+
+## Basic Scrape ##
 * The most basic search is to use your own keyword combinations
 
         python tweetscraper_bootstrap.py \
@@ -98,6 +123,7 @@ desired destination. Nothing has to be started directly inside of a container!
         -q "nasa filter:links" \        # search for "nasa" related tweets but only with links containing
         -vol /path/to/hose/src          # docker volume binding
         
+## Based on Large German Cities ##
 * Search for keywords within multiple large german cities
 
         python tweetscraper_bootstrap.py \
@@ -110,7 +136,41 @@ desired destination. Nothing has to be started directly inside of a container!
 What will hapen now is that there will be started a couple of docker containers which will be automatically be deleted after they finish their work. All crawlers will be started with the necessary parameters without you having to interfere with them.
 
 You can also use **-k** multiple times to use **more keywords**. 
-       
+
+## Based on Popular Dating Keywords (english) ##
+* Find tweets based on popular dating keywords (english)
+
+        python tweetscraper_bootstrap.py \
+        -v \
+        -n dating_keywords_english \
+        --querymode dating_keywords_en \
+        -vol /path/to/src/on/host
+        
+This will only trigger the keywords in a specific list. Although you can do more to filter by adding arguments.
+
+   | Argument | Consequence |
+   | --- | --- |
+   | --sentiment positive | adds the ":)" string to the search parameter to find only positive mentions |
+   | --sentiment negative | adds the ":(" string which will give you negative mentions  |
+   | --filter links | finds tweets which are linking to URLs. Must not be only "links"" |
+   | --question | adds the "?" string to your search query and finds tweets containing questions |
+   | --source twitterfeed | indicates that you want only tweets which came from TwitterFeed, but this can be different |
+   | --near Berlin | filters your results to geogrpahical points like Berlin |
+   | --within 15mi | filters your results to a 15 miles radius around the geographical point specified in 'near* |
+   | --since 2016-08-08 | only looks at tweets where the oldest are from the specified date |
+   | --until 2017-09-07 | only looks at tweets where the newest are from the speicified date  |
+
+## Examples ##
+
+This one findes positive tweets about all dating keywords. Keyword by keyword, everyone in its docker container.
+
+    python tweetscraper_bootstrap.py \
+        -v \
+        -n dating_keywords_english \
+        --querymode dating_keywords_en \
+        -vol /path/to/src/on/host \
+        --sentiment positive 
+        
 # Acknowledgement #
 Keeping the crawler up to date requires continuous efforts, we thank all the [contributors](https://github.com/jonbakerfish/TweetScraper/graphs/contributors) for their valuable work.
 

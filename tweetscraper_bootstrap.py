@@ -18,6 +18,19 @@ parser.add_argument('-k', action='append', dest='keyword_col', default=[],
 parser.add_argument('-v', action="store_true", help="Verbose mode, you know.")
 parser.add_argument('-vol', action="store", help="some Docker volume for your code binding")
 parser.add_argument('-lp', action="store", help="Custom list path in case you want to make a bulk search for multiple keywords.")
+
+# params for querymode: dating_keywords
+parser.add_argument('--question', action="store_true")
+parser.add_argument('--sentiment', action="store", dest="sentiments")
+parser.add_argument('--person', action="store", dest='persons')
+parser.add_argument('--hashtag', action="store", dest="hashtags")
+parser.add_argument('--filter', action="store", dest="links")
+parser.add_argument('--source', action="store", dest="sources")
+parser.add_argument('--near', action="store", dest="near")
+parser.add_argument('--within', action="store", dest="radius")
+parser.add_argument('--since', action="store", dest="since")
+parser.add_argument('--until', action="store", dest="until")
+
 args = parser.parse_args()
 
 # Logger
@@ -129,28 +142,98 @@ class TweetScrapeBootstrap(object):
             self.search_string = keyword_string + "near:" + self.separator + city
             self.search()
 
-    @staticmethod
-    def read_custom_list(path='analyze_data/custom_list.txt'):
+    def search_dating_keywords_en(self, sentiment=None, question=None, links=None, source=None, near=None, within=None, since=None, until=None):
         """
-        WIP: reads a custom list if you want to provider your own list (bulk)
+        Method takes a lot of parameters which can be used to make a twitter search ore precise. All parameters
+        will be taken care of in a way that in case that it is set, the software starts to run corresponding docker
+        containers.
 
-        :param self:
-        :param path:
+        :param sentiment: can be ":)" or ":("
+        :param question: can just be set or not
+        :param filter: can be set with a word "links" in order to construct "filter:links" which filters for links only.
+        :param source: can be set to "twitterfeed" in order to filter for only items entered via TwitterFeed
+        :param near: can be added to place some city as the keyword in order to get information about things around cities
+        :param within: can be used to define a radius
+        :param since: defines some start day when we should enccountter
+        :return: None
+        """
+
+        dating_keywords = self.read_custom_list("analyze_data/dating_keywords_en.txt")
+
+        # when everything is noen just go ahead
+        if sentiment is None and \
+            question is False and \
+            links is None and \
+            source is None and \
+            near is None and \
+            within is None and \
+            since is None:
+
+            self.search_with_symbol(None, dating_keywords)
+
+        if question:
+            self.search_with_symbol("?", dating_keywords)
+
+        if sentiment:
+            if sentiment == "positive":
+                self.search_with_symbol(":)", dating_keywords)
+            elif sentiment == "negative":
+                self.search_with_symbol(":(", dating_keywords)
+            else:
+                raise TweetScrapeBootstrapException("Unknown sentiment.")
+
+        if links:
+            self.search_with_symbol("filter:" + links, dating_keywords)
+
+        if source:
+            self.search_with_symbol("source:" + source, dating_keywords)
+
+        if near:
+            self.search_with_symbol("near:" + near, dating_keywords)
+        elif near and within:
+            self.search_with_symbol("near:" + near + self.separator + "within:" + within, dating_keywords)
+
+        if since:
+            self.search_with_symbol("since: " + since, dating_keywords)
+
+        if until:
+            self.search_with_symbol("until: " + until, dating_keywords)
+
+    def search_with_symbol(self, symbol, keyword_list):
+        """
+        Used as a shortcut when you have to add somehting like ? or :( or :) behind a search
+        query on Twitter.
+
+        :param symbol: The symbol in form of a string
+        :param keyword_list: The list with all keywords that should be searched for
         :return:
         """
+
+        for keyword in keyword_list:
+            if symbol:
+                self.search_string = keyword.replace(" ", "") + tsb.separator + symbol
+            else:
+                self.search_string = keyword.replace(" ", "")
+
+            logger.debug("Search with symbol: " + str(self.search_string))
+            self.search()
+
+    @staticmethod
+    def read_custom_list(path):
+        """
+        Reads a custom list if you want to provider your own list (bulk)
+
+        :param path: The path where the file resides.
+        :return: A list containing the file rows
+        """
+
         temp_custom_list = list()
+
         with open(path, encoding='utf-8', mode='r') as file:
             for line in file:
                 temp_custom_list.append(line.replace("\n", " "))
+
         return temp_custom_list
-
-    def search_custom_list(self):
-        """
-        WIP: searches for whatever you provide (bulk)
-
-        :return:
-        """
-        pass
 
 
 if __name__ == "__main__":
@@ -192,6 +275,11 @@ if __name__ == "__main__":
         # WIP: custom list mode
         # elif args.querymode == TwitterCommand.CUSTOM_LIST:
         #    custom_list = tsb.read_custom_list()
+
+        elif args.querymode == TwitterCommand.DATING_KEYWORDS_EN:
+            logger.debug("dating keywords en")
+            tsb.search_dating_keywords_en(args.sentiments, args.question, args.links, args.sources,
+                                          args.near, args.radius, args.since)
 
         else:
             raise TweetScrapeBootstrapException("No known automatic mode selected.")
