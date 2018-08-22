@@ -91,11 +91,11 @@ Download and install the community edition: https://store.docker.com/editions/co
         
 ## Start the scraper inside docker
 
-        docker run -d \
-        --name tweet_scraper \
-        -v /path/on/your/host/with/gitclone:/home/tweetscraper/ \
-        tweetscraper:latest \
-        scrapy crawl TweetScraper -a query="example #fun"
+    docker run -d \
+            --name tweet_scraper \
+            -v /path/on/your/host/with/gitclone:/home/tweetscraper/ \
+            tweetscraper:latest \
+            scrapy crawl TweetScraper -a query="example #fun"
         
 If you want to debug your container just delete the -d from your command and see it's output in your console.
 
@@ -115,21 +115,21 @@ desired destination. Nothing has to be started directly inside of a container!
 ## Basic Scrape ##
 * The most basic search is to use your own keyword combinations
 
-        python tweetscraper_bootstrap.py \
-        -v \                            # verbose mode
-        -n my_own_twitter_scrape \      # container name (part of it)
-        -q "nasa filter:links" \        # search for "nasa" related tweets but only with links containing
-        -vol /path/to/hose/src          # docker volume binding
+         python tweetscraper_bootstrap.py \
+            -v \                            # verbose mode
+            -n my_own_twitter_scrape \      # container name (part of it)
+            -q "nasa filter:links" \        # search for "nasa" related tweets but only with links containing
+            -vol /path/to/hose/src          # docker volume binding
         
 ## Based on Large German Cities ##
 * Search for keywords within multiple large german cities
 
         python tweetscraper_bootstrap.py \
-        -v \                            # verbose mode
-        -n keyword_large_de_city \      # container name (part of it)
-        --querymode near_xl_de_city \   # indicates the type of search (multiple large cities in germany)
-        -k keyword \                    # the keyword you want to search for
-        -vol /path/to/src/on/host       # docker volume binding
+            -v \                            # verbose mode
+            -n keyword_large_de_city \      # container name (part of it)
+            --querymode near_xl_de_city \   # indicates the type of search (multiple large cities in germany)
+            -k keyword \                    # the keyword you want to search for
+            -vol /path/to/src/on/host       # docker volume binding
 
 What will hapen now is that there will be started a couple of docker containers which will be automatically be deleted after they finish their work. All crawlers will be started with the necessary parameters without you having to interfere with them.
 
@@ -139,11 +139,11 @@ You can also use **-k** multiple times to use **more keywords**.
 * Find tweets based on popular dating keywords (english)
 
         python tweetscraper_bootstrap.py \
-        -v \
-        -n dating_keywords_english \
-        --querymode dating_keywords_en \
-        -vol /path/to/src/on/host
-        
+            -v \
+            -n dating_keywords_english \
+            --querymode dating_keywords_en \
+            -vol /path/to/src/on/host
+            
 This will only trigger the keywords in a specific list. Although you can do more to filter by adding arguments.
 
    | Argument | Consequence |
@@ -158,7 +158,7 @@ This will only trigger the keywords in a specific list. Although you can do more
    | --since 2016-08-08 | only looks at tweets where the oldest are from the specified date |
    | --until 2017-09-07 | only looks at tweets where the newest are from the speicified date  |
 
-## Examples ##
+### Examples ###
 
 This one findes positive tweets about all dating keywords. Keyword by keyword, everyone in its docker container.
 
@@ -168,6 +168,30 @@ This one findes positive tweets about all dating keywords. Keyword by keyword, e
         --querymode dating_keywords_en \
         -vol /path/to/src/on/host \
         --sentiment positive 
+
+## Based on your own keyword list ##
+* Finds tweets based on your own keyword list including the filters from above where you can add sentiments etc.
+
+```
+python tweeterscraper_bootstrap.py \
+    -v \
+    -n custom_list \
+    -lp /path/to/list/test_list.txt \
+    --querymode custom_list \
+    -vol /path/to/src/on/host
+``` 
+
+If you want to add some more filters just go ahead like this:
+
+     python tweeterscraper_bootstrap.py \
+        -v \
+        -n custom_list \
+        -lp /path/to/list/test_list.txt \
+        --querymode custom_list \
+        -vol /path/to/src/on/host \
+        --near NYC \
+        
+The command above will trigger all of your keywordlist entries with "near: NYC" in order to find anything related with NYC or even posted in NYC (if data is available).
         
 # Acknowledgement #
 Keeping the crawler up to date requires continuous efforts, we thank all the [contributors](https://github.com/jonbakerfish/TweetScraper/graphs/contributors) for their valuable work.

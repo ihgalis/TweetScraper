@@ -17,7 +17,7 @@ parser.add_argument('-k', action='append', dest='keyword_col', default=[],
                     help="Some keywords you would like to include.")
 parser.add_argument('-v', action="store_true", help="Verbose mode, you know.")
 parser.add_argument('-vol', action="store", help="some Docker volume for your code binding")
-parser.add_argument('-lp', action="store", help="Custom list path in case you want to make a bulk search for multiple keywords.")
+parser.add_argument('-lp', action="store", dest="custom_list", help="Custom list path in case you want to make a bulk search for multiple keywords.")
 
 # params for querymode: dating_keywords
 parser.add_argument('--question', action="store_true")
@@ -142,6 +142,58 @@ class TweetScrapeBootstrap(object):
             self.search_string = keyword_string + "near:" + self.separator + city
             self.search()
 
+    def search_with_symbol_generic(self, keywords, sentiment=None, question=None, links=None, source=None, near=None, within=None, since=None, until=None):
+        """
+
+        :param sentiment:
+        :param question:
+        :param links:
+        :param source:
+        :param near:
+        :param within:
+        :param since:
+        :param until:
+        :return:
+        """
+
+        # when everything is noen just go ahead
+        if sentiment is None and \
+                question is False and \
+                links is None and \
+                source is None and \
+                near is None and \
+                within is None and \
+                since is None:
+            self.search_with_symbol(None, keywords)
+
+        if question:
+            self.search_with_symbol("?", keywords)
+
+        if sentiment:
+            if sentiment == "positive":
+                self.search_with_symbol(":)", keywords)
+            elif sentiment == "negative":
+                self.search_with_symbol(":(", keywords)
+            else:
+                raise TweetScrapeBootstrapException("Unknown sentiment.")
+
+        if links:
+            self.search_with_symbol("filter:" + links, keywords)
+
+        if source:
+            self.search_with_symbol("source:" + source, keywords)
+
+        if near:
+            self.search_with_symbol("near:" + near, keywords)
+        elif near and within:
+            self.search_with_symbol("near:" + near + self.separator + "within:" + within, keywords)
+
+        if since:
+            self.search_with_symbol("since: " + since, keywords)
+
+        if until:
+            self.search_with_symbol("until: " + until, keywords)
+
     def search_dating_keywords_en(self, sentiment=None, question=None, links=None, source=None, near=None, within=None, since=None, until=None):
         """
         Method takes a lot of parameters which can be used to make a twitter search ore precise. All parameters
@@ -159,45 +211,7 @@ class TweetScrapeBootstrap(object):
         """
 
         dating_keywords = self.read_custom_list("analyze_data/dating_keywords_en.txt")
-
-        # when everything is noen just go ahead
-        if sentiment is None and \
-            question is False and \
-            links is None and \
-            source is None and \
-            near is None and \
-            within is None and \
-            since is None:
-
-            self.search_with_symbol(None, dating_keywords)
-
-        if question:
-            self.search_with_symbol("?", dating_keywords)
-
-        if sentiment:
-            if sentiment == "positive":
-                self.search_with_symbol(":)", dating_keywords)
-            elif sentiment == "negative":
-                self.search_with_symbol(":(", dating_keywords)
-            else:
-                raise TweetScrapeBootstrapException("Unknown sentiment.")
-
-        if links:
-            self.search_with_symbol("filter:" + links, dating_keywords)
-
-        if source:
-            self.search_with_symbol("source:" + source, dating_keywords)
-
-        if near:
-            self.search_with_symbol("near:" + near, dating_keywords)
-        elif near and within:
-            self.search_with_symbol("near:" + near + self.separator + "within:" + within, dating_keywords)
-
-        if since:
-            self.search_with_symbol("since: " + since, dating_keywords)
-
-        if until:
-            self.search_with_symbol("until: " + until, dating_keywords)
+        self.search_with_symbol_generic(dating_keywords, sentiment, question, links, source, near, within, since, until)
 
     def search_with_symbol(self, symbol, keyword_list):
         """
@@ -209,14 +223,37 @@ class TweetScrapeBootstrap(object):
         :return:
         """
 
-        for keyword in keyword_list:
-            if symbol:
-                self.search_string = keyword.replace(" ", "") + tsb.separator + symbol
-            else:
-                self.search_string = keyword.replace(" ", "")
+        # sometimes it is not a list ... well
+        if isinstance(keyword_list, (list,)):
+            for keyword in keyword_list:
+                self.proceed_symbol_search(symbol, keyword)
 
-            logger.debug("Search with symbol: " + str(self.search_string))
-            self.search()
+        # no list? well must be some custom thing
+        else:
+            # make it more readable
+            keyword = keyword_list
+            self.proceed_symbol_search(symbol, keyword)
+
+    def proceed_symbol_search(self, symbol, keyword):
+        """
+        Method checks whether there is a symbol or not and adds it or not. Finfally it invokes
+        search() in order to create the docker containers.
+
+        :param symbol:
+        :param keyword:
+        :return:
+        """
+        if symbol:
+
+            # include it with the "symbol" whatever it is
+            self.search_string = keyword.replace(" ", "") + tsb.separator + symbol
+
+        else:
+            # do it without the symbol but clean the keyword up (just in case)
+            self.search_string = keyword.replace(" ", "")
+
+        logger.debug("Search with symbol: " + str(self.search_string))
+        self.search()
 
     @staticmethod
     def read_custom_list(path):
@@ -249,7 +286,11 @@ if __name__ == "__main__":
 
         # self defined query
         tsb.name = args.container_name
+
+        # set the search string
         tsb.search_string = args.q
+
+        # start the docker party
         tsb.search()
 
     # in this case you want to make an automatic scrape
@@ -272,14 +313,29 @@ if __name__ == "__main__":
             # invoke the scrapers
             tsb.search_near_large_german_cities(keyword_string)
 
-        # WIP: custom list mode
-        # elif args.querymode == TwitterCommand.CUSTOM_LIST:
-        #    custom_list = tsb.read_custom_list()
-
+        # dating keywords english
         elif args.querymode == TwitterCommand.DATING_KEYWORDS_EN:
             logger.debug("dating keywords en")
             tsb.search_dating_keywords_en(args.sentiments, args.question, args.links, args.sources,
                                           args.near, args.radius, args.since)
+
+        # in case of custom lists
+        elif args.querymode == TwitterCommand.CUSTOM_LIST:
+            logger.debug("custom list detected")
+
+            # get the list
+            keyword_list = tsb.read_custom_list(args.custom_list)
+
+            for keyword in keyword_list:
+                # clean it upt
+                keyword = keyword.replace("\n", "")
+
+                # give it a name
+                tsb.name = args.container_name + tsb.separator + str(keyword)
+                logger.debug("custom list keyword: " + str(keyword))
+
+                # search for it (docker etc.)
+                tsb.search_with_symbol_generic(keyword, args.sentiments, args.question, args.links, args.sources, args.near, args.radius, args.since, args.until)
 
         else:
             raise TweetScrapeBootstrapException("No known automatic mode selected.")
