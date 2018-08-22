@@ -76,11 +76,9 @@ Download and install the community edition: https://store.docker.com/editions/co
 
 2. Linux (Ubuntu 16.04)
 
-    sudo apt-get update
-    sudo apt-get install docker-ce
-    
-    # verify your installation
-    sudo docker run hello-world
+        sudo apt-get update
+        sudo apt-get install docker-ce
+        sudo docker run hello-world
 
 3. Mac
 
