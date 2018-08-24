@@ -64,6 +64,7 @@ class TweetScraper(CrawlSpider):
             try:
                 tweet = Tweet()
 
+                tweet['query'] = self.query
                 tweet['usernameTweet'] = item.xpath('.//span[@class="username u-dir u-textTruncate"]/b/text()').extract()[0]
 
                 ID = item.xpath('.//@data-tweet-id').extract()
