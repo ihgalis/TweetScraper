@@ -58,6 +58,18 @@ It requires [Scrapy](http://scrapy.org/) and [PyMongo](https://api.mongodb.org/p
 
 E.g.: `scrapy crawl TweetScraper -a query=foo -a crawl_user=True`
 
+# Use with Docker (ready for take-off)
+If you want to start without building your own image just go ahead and run the prebuild image which I have prepared for you:
+
+    docker pull vtep86/twitterscraper
+
+Afterwards you need to start the container and tell him what to do. For this purpose you need to use the commands specified below.
+
+    docker run -d --name twitterscraper_test vtep86/twitterscraper \
+                    scrapy crawl TweetScraper -a query="example #fun"
+                    
+Anyway I would suggest you build your own Image and start using the **tweeterscraper_bootstrap.py** which generates all the needed containers, starts them and cleans everything up when it has finished.
+
 # Usage with Docker (simple) #
 Before you start through the entire setup process think about where you want to store the data. This fork is designed that you go straight ahead with MongoDB and Docker. You can start the crawler directly or within a Docker container.
 
@@ -131,7 +143,7 @@ desired destination. Nothing has to be started directly inside of a container!
             -k keyword \                    # the keyword you want to search for
             -vol /path/to/src/on/host       # docker volume binding
 
-What will hapen now is that there will be started a couple of docker containers which will be automatically be deleted after they finish their work. All crawlers will be started with the necessary parameters without you having to interfere with them.
+What will happen now is that there will be started a couple of docker containers which will be automatically be deleted after they finish their work. All crawlers will be started with the necessary parameters without you having to interfere with them.
 
 You can also use **-k** multiple times to use **more keywords**. 
 
@@ -192,7 +204,7 @@ If you want to add some more filters just go ahead like this:
         --near NYC \
         
 The command above will trigger all of your keywordlist entries with "near: NYC" in order to find anything related with NYC or even posted in NYC (if data is available).
-        
+
 # Acknowledgement #
 Keeping the crawler up to date requires continuous efforts, we thank all the [contributors](https://github.com/jonbakerfish/TweetScraper/graphs/contributors) for their valuable work.
 

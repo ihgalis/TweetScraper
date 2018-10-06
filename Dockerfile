@@ -1,4 +1,4 @@
-FROM danielguerra/alpine-scrapy
+FROM vtep86/alpine-scrapy-python3
 
 COPY . /home/tweetscraper/
 WORKDIR /home/tweetscraper/
